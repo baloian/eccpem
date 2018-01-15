@@ -1,0 +1,5 @@
+build/
+*.swp
+*.out
+*.pem
+.DS_Store

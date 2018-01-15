@@ -1,0 +1,21 @@
+dist: trusty
+sudo: required
+language: c
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-5
+      - cmake
+      - libssl-dev
+
+compiler:
+  - gcc
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
