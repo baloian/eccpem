@@ -34,3 +34,12 @@ set(STATIC_LIB_PATH "/usr/lib/x86_64-linux-gnu")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libeccpem.a DESTINATION ${STATIC_LIB_PATH})
 install(FILES ${ECCPEM_HEADERS} DESTINATION ${ICLUDE_FILE_PATH})
 
+
+# Unit tests
+set(LIBS ${LIBS} "-lssl -lcrypto")
+add_executable(unit_tests
+               ${ECCPEM_SOURCES}
+               tests/run_test.c)
+
+target_link_libraries(unit_tests ${LIBS})
+
