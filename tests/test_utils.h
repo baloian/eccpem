@@ -11,9 +11,27 @@ void RUN_UTILS_TESTS() {
   int ret_value = VerifyPemFileFormat(pem_file);
   TEST_ASSERT_EQUAL_INT(ret_value, 1);
 
-  printf("Testing VerifyPemFileFormat ----------------------------------------- [ "
-         GREEN "PASSED" RESET " ]\n");
 
-  //TEST_ASSERT_EQUAL_STRING(expected, actual);
+  const char* not_pem_file = "test_pemfile.not_pem";
+
+  printf("\nExpected output: \n"
+         "Error: Provided public/private key file must be PEM format (extension is .pem).\n");
+  printf("Real output: \n");
+
+  ret_value = VerifyPemFileFormat(not_pem_file);
+  TEST_ASSERT_EQUAL_INT(ret_value, 0);
+
+
+
+  printf("\nExpected output: \n"
+         "Error: Provided public/private key file cannot be NULL it must be PEM format.\n");
+
+  printf("Real output: \n");
+  ret_value = VerifyPemFileFormat(NULL);
+  TEST_ASSERT_EQUAL_INT(ret_value, 0);
+
+
+  printf("\nTesting VerifyPemFileFormat ----------------------------------------- [ "
+         GREEN "PASSED" RESET " ]\n");
 }
 
