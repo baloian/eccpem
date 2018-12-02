@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/baloyan/eccpem.svg?branch=master)](https://travis-ci.org/baloyan/eccpem)
+[![Build Status](https://travis-ci.com/baloyan/eccpem.svg?branch=master)](https://travis-ci.com/baloyan/eccpem)
 --------------------------------
 
 # ECCPEM
@@ -42,7 +42,7 @@ Note that as ECCPEM is based on OpenSSL library you should also use
 `-lssl` and `-lcrypto` options just next to the `-leccpem`.
 
 In this example we are generating `secp256k1` Elliptic Curve type (Bitcoin uses
-the same). To list the supported curves run : `$ openssl ecparam -list_curves`
+the same). To list the supported curves run  `$ openssl ecparam -list_curves`
 command.
 
 Example:
