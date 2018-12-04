@@ -106,4 +106,5 @@ https://github.com/baloyan/eccpem/blob/master/LICENSE).
 # References
 [1] [Elliptic Curve Digital Signature Algorithm](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm)   
 [2] [OpenSSL Library](https://www.openssl.org/)   
-[3] [How To Generate Public and Private Keys for the Blockchain](https://medium.com/@baloian/how-to-generate-public-and-private-keys-for-the-blockchain-db6d057432fb?fbclid=IwAR0u1yB39cgsPzYqYeHTe_ck7smi5PyShTCI2VKWpTW14wgkCiYGWL9axf0)
+[3] [How To Generate Public and Private Keys for the Blockchain](https://medium.com/@baloian/how-to-generate-public-and-private-keys-for-the-blockchain-db6d057432fb?fbclid=IwAR0u1yB39cgsPzYqYeHTe_ck7smi5PyShTCI2VKWpTW14wgkCiYGWL9axf0)   
+[4] [Bitcoin Wiki](https://en.bitcoin.it/wiki/Secp256k1)
