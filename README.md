@@ -8,7 +8,7 @@ languages ?
 
 ECCPEM library makes it super easy just calling one function and job is done!.
 
-# Get the source code and build the project
+### Get the source code and build the project
 
 Before installing project install minimum requirements, which are `Cmake` and
 `OpenSSL` library.
@@ -35,7 +35,7 @@ $ make
 $ sudo make install
 ```
 
-# How to use ECCPEM ?
+### How to use ECCPEM ?
 Using ECCPEM is pretty easy just include corresponding header file
 (`#include <eccpem/eccpem>`) and use `-leccpem` compiler option.
 Note that as ECCPEM is based on OpenSSL library you should also use
@@ -88,22 +88,22 @@ Compile C++ code:
 $ g++ -o myeccpem cpp_eccpem_test.cpp -leccpem -lssl -lcrypto
 ```
 
-# ECCPEM API
+### ECCPEM API
 
 For detailed ECCPEM API documentation have look at [eccpem/docs](
 https://github.com/baloyan/eccpem/blob/master/docs/README.md)
 
-# Contributions
+### Contributions
 Contributions can be made by submitting GitHub pull requests to this
 repository.  In general, the ECCPEM source code follows Google's [C++ style
 guide](https://google.github.io/styleguide/cppguide.html). (Yes, it is
 for C++, but please follow rules for C language also).
 
-# License
+### License
 All contributions are made under the MIT license.  See [LICENSE](
 https://github.com/baloyan/eccpem/blob/master/LICENSE).
 
-# References
+### References
 [1] [Elliptic Curve Digital Signature Algorithm](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm)   
 [2] [OpenSSL Library](https://www.openssl.org/)   
 [3] [Bitcoin Wiki](https://en.bitcoin.it/wiki/Secp256k1)   
