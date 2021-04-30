@@ -4,27 +4,25 @@
 # ECCPEM
 How to generate Elliptic Curve Cryptography (ECC) key pairs (public and private
 keys) write them in PEM file or read from PEM file in C and C++ programming
-languages ?
+languages?
 
-ECCPEM library makes it super easy just calling one function and job is done!.
+ECCPEM library makes it super easy just invoking one function and the job is done!
 
 ### Get the source code and build the project
 
-Before installing project install minimum requirements, which are `Cmake` and
-`OpenSSL` library.
+Before installing the project, install minimum requirements: `Cmake` and `OpenSSL` libraries.
 ```bash
 $ sudo apt-get instal cmake libssl-dev
 ```
 
-The latest source code is available on ECCPEM's GitHub repository. You may
-use Git from the command-line to clone the source code:
+Use `git` from the command-line to clone the source code:
 
 ```bash
 $ git clone https://github.com/baloyan/eccpem.git
 $ cd eccpem
 ```
 
-To configure and build the project:
+To configure and build the project run the following commands:
 
 ```bash
 $ mkdir build
@@ -47,7 +45,7 @@ command.
 
 Example:
 
-Create a `eccpem_test.c` file and write following code:
+Create a `eccpem_test.c` file and write the following code:
 ```bash
 #include <eccpem/eccpem.h>
 #include <stdio.h>
@@ -71,7 +69,7 @@ int main() {
 ```
 
 
-Compile code:
+Compile the above code:
 ```bash
 $ gcc -o myeccpem eccpem_test.c -leccpem -lssl -lcrypto
 ```
@@ -90,7 +88,7 @@ $ g++ -o myeccpem cpp_eccpem_test.cpp -leccpem -lssl -lcrypto
 
 ### ECCPEM API
 
-For detailed ECCPEM API documentation have look at [eccpem/docs](
+For detailed ECCPEM API documentation take a look at [eccpem/docs](
 https://github.com/baloyan/eccpem/blob/master/docs/README.md)
 
 ### Contributions
