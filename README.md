@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/baloyan/eccpem.svg?branch=master)](https://travis-ci.com/baloyan/eccpem)
+[![Build Status](https://travis-ci.com/baloian/eccpem.svg?branch=master)](https://travis-ci.com/baloian/eccpem)
 --------------------------------
 
 # ECCPEM
