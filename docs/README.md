@@ -1,4 +1,4 @@
-# ECCPEM API Documentation
+# ECCPEM Documentation
 
 #### 1.`CreateECCKeysPemFiles`
 Function generates Elliptic Curve Cryptography - ECC key pairs and writes to PEM formatted files.
@@ -19,9 +19,7 @@ Function generates Elliptic Curve Cryptography - ECC key pairs and writes to PEM
 Function prototype:
 
 ```c
-int CreateECCKeysPemFiles(const char* ec_type,
-                          const char* pubkey_file,
-                          const char* privkey_file);
+int CreateECCKeysPemFiles(const char* ec_type, const char* pubkey_file,  const char* privkey_file);
 ```
 
 ---
@@ -49,9 +47,7 @@ Function reads private key's pem file and stores it in a given array as a binary
 
 Function prototype:
 ```c
-int ReadPrivateKeyPemFile(const char* privkey_file,
-                          uint8_t private_key[],
-                          const unsigned int key_size);
+int ReadPrivateKeyPemFile(const char* privkey_file, uint8_t private_key[], const unsigned int key_size);  
 ```
 
 ---
@@ -80,9 +76,7 @@ Note that an array will contain compressed bublic key.
 
 Function prototype:
 ```c
-int ReadPublicKeyPemFile(const char* pubkey_file,
-                         uint8_t public_key[],
-                         const unsigned int compressed_key_size);
+int ReadPublicKeyPemFile(const char* pubkey_file, uint8_t public_key[], const unsigned int compressed_key_size);       
 ```
 
 ---
