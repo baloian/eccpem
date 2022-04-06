@@ -78,8 +78,7 @@ Run executable file:
 $ ./myeccpem
 ```
 
-C++ version of example, see: [cpp_gen_pem_files.cpp](
-https://github.com/baloyan/eccpem/blob/master/tests/cpp_eccpem_test.cpp)
+C++ version of example, see: [cpp_gen_pem_files.cpp](https://github.com/baloian/eccpem/blob/master/examples/cpp_gen_pem_files.cpp)
 
 Compile C++ code:
 ```bash
