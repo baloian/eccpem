@@ -3,12 +3,11 @@
 
 # ECCPEM
 How to generate Elliptic Curve Cryptography (ECC) key pairs (public and private
-keys) write them in PEM file or read from PEM file in C and C++ programming
-languages?
+keys) write them in `.PEM` file or read from `.PEM` file in C/C++ programming languages?
 
 ECCPEM library makes it super easy just invoking one function and the job is done!
 
-### Get the source code and build the project
+## Build
 
 Before installing the project, install minimum requirements: `Cmake` and `OpenSSL` libraries.
 ```bash
@@ -33,18 +32,7 @@ $ make
 $ sudo make install
 ```
 
-### How to use ECCPEM ?
-Using ECCPEM is pretty easy just include corresponding header file
-(`#include <eccpem/eccpem>`) and use `-leccpem` compiler option.
-Note that as ECCPEM is based on OpenSSL library you should also use
-`-lssl` and `-lcrypto` options just next to the `-leccpem`.
-
-In this example we are generating `secp256k1` Elliptic Curve type (Bitcoin uses
-the same). To list the supported curves run  `$ openssl ecparam -list_curves`
-command.
-
-Example:
-
+## Usage
 Create a `eccpem_test.c` file and write the following code:
 ```bash
 #include <eccpem/eccpem.h>
@@ -85,22 +73,22 @@ Compile C++ code:
 $ g++ -o myeccpem cpp_eccpem_test.cpp -leccpem -lssl -lcrypto
 ```
 
-### ECCPEM API
+## ECCPEM API
 
 For detailed ECCPEM API documentation take a look at [eccpem/docs](
 https://github.com/baloyan/eccpem/blob/master/docs/README.md)
 
-### Contributions
+## Contributions
 Contributions can be made by submitting GitHub pull requests to this
 repository.  In general, the ECCPEM source code follows Google's [C++ style
 guide](https://google.github.io/styleguide/cppguide.html). (Yes, it is
 for C++, but please follow rules for C language also).
 
-### License
+## License
 All contributions are made under the MIT license.  See [LICENSE](
 https://github.com/baloyan/eccpem/blob/master/LICENSE).
 
-### References
+## References
 [1] [Elliptic Curve Digital Signature Algorithm](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm)   
 [2] [OpenSSL Library](https://www.openssl.org/)   
 [3] [Bitcoin Wiki](https://en.bitcoin.it/wiki/Secp256k1)   
