@@ -34,7 +34,7 @@ $ sudo make install
 
 ## Usage
 Create a `eccpem_test.c` file and write the following code:
-```bash
+```cpp
 #include <eccpem/eccpem.h>
 #include <stdio.h>
 
@@ -66,7 +66,7 @@ Run executable file:
 $ ./myeccpem
 ```
 
-C++ version of example, see: [cpp_gen_pem_files.cpp](https://github.com/baloian/eccpem/blob/master/examples/cpp_gen_pem_files.cpp)
+See C++ example: [cpp_gen_pem_files.cpp](https://github.com/baloian/eccpem/blob/master/examples/cpp_gen_pem_files.cpp)
 
 Compile C++ code:
 ```bash
@@ -82,14 +82,8 @@ https://github.com/baloyan/eccpem/blob/master/docs/README.md)
 Contributions can be made by submitting GitHub pull requests to this
 repository.  In general, the ECCPEM source code follows Google's [C++ style
 guide](https://google.github.io/styleguide/cppguide.html). (Yes, it is
-for C++, but please follow rules for C language also).
+for C++, but please follow the rules for C language as well).
 
 ## License
 All contributions are made under the MIT license.  See [LICENSE](
 https://github.com/baloyan/eccpem/blob/master/LICENSE).
-
-## References
-[1] [Elliptic Curve Digital Signature Algorithm](https://en.wikipedia.org/wiki/Elliptic_Curve_Digital_Signature_Algorithm)   
-[2] [OpenSSL Library](https://www.openssl.org/)   
-[3] [Bitcoin Wiki](https://en.bitcoin.it/wiki/Secp256k1)   
-[4] [How To Generate Public and Private Keys for the Blockchain](https://medium.com/@baloian/how-to-generate-public-and-private-keys-for-the-blockchain-db6d057432fb?fbclid=IwAR0u1yB39cgsPzYqYeHTe_ck7smi5PyShTCI2VKWpTW14wgkCiYGWL9axf0)
