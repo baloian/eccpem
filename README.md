@@ -1,15 +1,11 @@
-[![Build Status](https://travis-ci.com/baloian/eccpem.svg?branch=master)](https://travis-ci.com/baloian/eccpem)
---------------------------------
-
 # ECCPEM
-How to generate Elliptic Curve Cryptography (ECC) key pairs (public and private
-keys) write them in `.PEM` file or read from `.PEM` file in C/C++ programming languages?
+Do you want to generate Elliptic Curve Cryptography (ECC) key pairs (public and private keys), write them to a `.PEM` file,
+or read them from a `.PEM` file in C/C++ programming languages?
 
-ECCPEM library makes it super easy just invoking one function and the job is done!
+The ECCPEM library makes it super easy just invoking one function and the job is done!
 
 ## Build
-
-Before installing the project, install minimum requirements: `Cmake` and `OpenSSL` libraries.
+Before installing the project, make sure you have installed the minimum requirements: the `Cmake` and `OpenSSL` libraries.
 ```bash
 $ sudo apt-get instal cmake libssl-dev
 ```
@@ -74,7 +70,6 @@ $ g++ -o myeccpem cpp_eccpem_test.cpp -leccpem -lssl -lcrypto
 ```
 
 ## ECCPEM API
-
 For detailed ECCPEM API documentation take a look at [eccpem/docs](
 https://github.com/baloyan/eccpem/blob/master/docs/README.md)
 
@@ -85,5 +80,5 @@ guide](https://google.github.io/styleguide/cppguide.html). (Yes, it is
 for C++, but please follow the rules for C language as well).
 
 ## License
-All contributions are made under the MIT license.  See [LICENSE](
+All contributions are made under the MIT license. See [LICENSE](
 https://github.com/baloyan/eccpem/blob/master/LICENSE).
