@@ -73,44 +73,43 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
   /* We do not need pem file anymore. */
   fclose(pem_file);
 
-  /* Get the private key as a BIGNUM */
-  const BIGNUM* priv_key_bn = NULL;
-  EVP_PKEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
-  if (ec_key == NULL) {
+  /* Create parameter builder for key export */
+  OSSL_PARAM_BLD* param_bld = OSSL_PARAM_BLD_new();
+  if (param_bld == NULL) {
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to convert EVP_PKEY to EC_KEY.\n");
+    fprintf(stderr, "Failed to create parameter builder.\n");
     return 0;
   }
 
-  priv_key_bn = EC_KEY_get0_private_key(ec_key);
-  if (priv_key_bn == NULL) {
+  /* Convert parameters */
+  OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(param_bld);
+  OSSL_PARAM_BLD_free(param_bld);
+  
+  if (params == NULL) {
     EVP_PKEY_free(pkey);
-    EVP_PKEY_free(ec_key);
-    fprintf(stderr, "Failed to get private key as BIGNUM.\n");
+    fprintf(stderr, "Failed to create parameters.\n");
     return 0;
   }
 
-  /* Clear the output buffer */
-  memset(private_key, 0, key_size);
-
-  /* Convert BIGNUM to binary */
-  const int bn_size = BN_num_bytes(priv_key_bn);
-  if (bn_size > key_size) {
+  /* Get private key as binary */
+  size_t actual_size = key_size;
+  if (!EVP_PKEY_get_octet_string_param(pkey, "priv",
+                                      private_key, key_size, &actual_size)) {
+    OSSL_PARAM_free(params);
     EVP_PKEY_free(pkey);
-    EVP_PKEY_free(ec_key);
+    fprintf(stderr, "Failed to export private key.\n");
+    return 0;
+  }
+
+  if (actual_size > key_size) {
+    OSSL_PARAM_free(params);
+    EVP_PKEY_free(pkey);
     fprintf(stderr, "Private key size is larger than provided buffer.\n");
     return 0;
   }
 
-  if (BN_bn2bin(priv_key_bn, private_key) != bn_size) {
-    EVP_PKEY_free(pkey);
-    EVP_PKEY_free(ec_key);
-    fprintf(stderr, "Failed to convert private key to binary.\n");
-    return 0;
-  }
-
+  OSSL_PARAM_free(params);
   EVP_PKEY_free(pkey);
-  EVP_PKEY_free(ec_key);
 
   return 1;
 }
@@ -169,32 +168,71 @@ int ReadPublicKeyPemFile(const char* pubkey_file,
     return 0;
   }
 
-  /* Convert to EC key format */
-  EVP_PKEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
-  if (ec_key == NULL) {
+  /* Get key parameters */
+  OSSL_PARAM_BLD* param_bld = OSSL_PARAM_BLD_new();
+  if (param_bld == NULL) {
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to extract EC key from EVP_PKEY\n");
+    fprintf(stderr, "Failed to create parameter builder\n");
     return 0;
   }
 
   /* Set compressed point format */
-  EC_KEY_set_conv_form(ec_key, POINT_CONVERSION_COMPRESSED);
-
-  /* Convert to binary, preserving original buffer pointer */
-  uint8_t* pub_copy = public_key;
-  const int key_size = i2o_ECPublicKey(ec_key, &pub_copy);
-  
-  if (key_size != compressed_key_size) {
+  if (!OSSL_PARAM_BLD_push_uint32(param_bld, "point-format", POINT_CONVERSION_COMPRESSED)) {
+    OSSL_PARAM_BLD_free(param_bld);
     EVP_PKEY_free(pkey);
-    EVP_PKEY_free(ec_key);
-    fprintf(stderr, "Compressed key size mismatch. Got %d bytes, expected %u\n",
+    fprintf(stderr, "Failed to set compressed point format\n");
+    return 0;
+  }
+
+  OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(param_bld);
+  OSSL_PARAM_BLD_free(param_bld);
+
+  if (params == NULL) {
+    EVP_PKEY_free(pkey);
+    fprintf(stderr, "Failed to create parameters\n");
+    return 0;
+  }
+
+  /* Create context for key export */
+  EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
+  if (ctx == NULL) {
+    OSSL_PARAM_free(params);
+    EVP_PKEY_free(pkey);
+    fprintf(stderr, "Failed to create key context\n");
+    return 0;
+  }
+
+  /* Set parameters on context */
+  if (!EVP_PKEY_CTX_set_params(ctx, params)) {
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    EVP_PKEY_free(pkey);
+    fprintf(stderr, "Failed to set key parameters\n");
+    return 0;
+  }
+
+  /* Export public key to binary */
+  size_t key_size = compressed_key_size;
+  if (!EVP_PKEY_get_octet_string_param(pkey, "pub", public_key, key_size, &key_size)) {
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    EVP_PKEY_free(pkey);
+    fprintf(stderr, "Failed to export public key\n");
+    return 0;
+  }
+
+  if (key_size != compressed_key_size) {
+    EVP_PKEY_CTX_free(ctx);
+    OSSL_PARAM_free(params);
+    EVP_PKEY_free(pkey);
+    fprintf(stderr, "Compressed key size mismatch. Got %zu bytes, expected %u\n",
             key_size, compressed_key_size);
     return 0;
   }
 
-  /* Cleanup */
+  EVP_PKEY_CTX_free(ctx);
+  OSSL_PARAM_free(params);
   EVP_PKEY_free(pkey);
-  EVP_PKEY_free(ec_key);
 
   return 1;
 }
