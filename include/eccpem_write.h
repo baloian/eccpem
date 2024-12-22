@@ -6,8 +6,8 @@
  * AUTHOR: Artiom Baloian <artiom.baloian@nyu.edu>
  *
  * DESCRIPTION:
- * File provides Elliptic Curve Cryptography key pairs generator and write keys
- * to PEM formatted files.
+ * File provides functionality to generate Elliptic Curve Cryptography (ECC) key pairs
+ * and write them to PEM formatted files.
  */
 
 #ifndef ECCPEM_WRITE_H_
@@ -20,26 +20,25 @@ extern "C" {
 #include <openssl/ec.h>
 
 /*
- * Function generates Elliptic Curve Cryptography - ECC key pairs and writes to
- * PEM formatted files for private and public keys separately.
- * Function rewrites provided file if it exists or creates a new file if it does
- * not exist.
+ * Function generates Elliptic Curve Cryptography (ECC) key pairs and writes them to
+ * PEM formatted files. If the specified files already exist, they will be overwritten.
+ * Otherwise, new files will be created.
  *
  * Arguments:
  * - ec_type: Elliptic Curve type. To list the supported curves run:
  *            $ openssl ecparam -list_curves
- * - pubkey_file: PEM formatted file (extension is .pem) where is going to be
- *                stored public key.
- * - privkey_file: PEM formatted file (extension is .pem) where is going to be
- *                 stored private key.
+ * - pubkey_file: PEM formatted file (extension is .pem) where the public key will
+ *                be stored.
+ * - privkey_file: PEM formatted file (extension is .pem) where the private key will
+ *                 be stored.
  *
  * Returns:
- * - 1 if generation of key pairs was successful.
- * - 0 if Creating a new OpenSSL EC_KEY object failed,
- *     generates a new EC public and private key failed,
- *     generating the newly allocated EVP_PKEY failed,
- *     error assigning EC_KEY key to EVP_PKEY structure or
- *     writing private and public keys in PEM format files failed.
+ * - 1 if generation of key pairs and writing them to PEM files was successful.
+ * - 0 if any of the following operations fail:
+ *     - Creating a new OpenSSL EC_KEY object
+ *     - Generating EC public and private keys
+ *     - Allocating and assigning keys to EVP_PKEY structure
+ *     - Writing keys to PEM format files
  */
 int CreateECCKeysPemFiles(const char* ec_type,
                           const char* pubkey_file,
@@ -48,18 +47,20 @@ int CreateECCKeysPemFiles(const char* ec_type,
 
 
 /*
- * Function writes private and public keys, represented by EVP_PKEY structure,
- * in given files. It rewrites provided file if it exists or creates a new file
- * if it does not exist.
+ * Function writes ECC key pairs from an EVP_PKEY structure to PEM formatted files.
+ * If the specified files already exist, they will be overwritten. Otherwise, new
+ * files will be created.
  *
  * Arguments:
- * - pkey: EVP_PKEY structure, which represents private and public keys.
- * - pubkey_file: Public key file, it must be PEM format.
- * - privkey_file: Private key file, it must be PEM format.
+ * - pkey: EVP_PKEY structure containing the ECC public and private key pair
+ * - pubkey_file: PEM formatted file (extension is .pem) where the public key will
+ *                be stored
+ * - privkey_file: PEM formatted file (extension is .pem) where the private key will
+ *                 be stored
  *
- * Return:
- * - 1 if PEM files are created successfully.
- * - 0 if creating PEM files failed.
+ * Returns:
+ * - 1 if writing both keys to PEM files was successful
+ * - 0 if writing either key to its PEM file failed
  */
 static int WriteKeysToPEMFiles(EVP_PKEY* pkey,
                                const char* pubkey_file,
