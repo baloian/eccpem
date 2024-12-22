@@ -57,7 +57,6 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
     return 0;
   }
 
-
   FILE* pem_file = fopen(privkey_file, "r");
   if (pem_file == NULL) {
     fprintf(stderr, "Unable to open private key's pem file or it does not exist.\n");
@@ -74,15 +73,8 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
   /* We do not need pem file anymore. */
   fclose(pem_file);
 
-  /*
-   * Extract EC-specific key from the EVP_PKEY structure. This returns a pointer
-   * to the EC_KEY structure contained within pkey, or NULL if pkey does not
-   * contain an EC key.
-   *
-   * Note: We use get1 instead of get0 to increment the reference count, since
-   * EC_KEY_free() will later decrement it. If the reference count reaches zero,
-   * the EC_KEY structure will be freed.
-   */
+  /* Get the private key as a BIGNUM */
+  const BIGNUM* priv_key_bn = NULL;
   EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
     EVP_PKEY_free(pkey);
@@ -90,24 +82,31 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
     return 0;
   }
 
-  /* At first we should get big number and then convert it to binary data. */
-  BIGNUM* bn_privkey = BN_new();
-  if (bn_privkey == NULL) {
+  priv_key_bn = EC_KEY_get0_private_key(ec_key);
+  if (priv_key_bn == NULL) {
     EVP_PKEY_free(pkey);
     EC_KEY_free(ec_key);
-    fprintf(stderr, "Failed to allocate and initialize a BIGNUM structure.\n");
+    fprintf(stderr, "Failed to get private key as BIGNUM.\n");
     return 0;
   }
 
-  memcpy(bn_privkey, EC_KEY_get0_private_key(ec_key), sizeof(BIGNUM));
+  /* Clear the output buffer */
+  memset(private_key, 0, key_size);
 
-  bzero(private_key, key_size);
-
-  const int ret_value = BN_bn2bin(bn_privkey, private_key);
-  if (ret_value == 0) {
+  /* Convert BIGNUM to binary */
+  const int bn_size = BN_num_bytes(priv_key_bn);
+  if (bn_size > key_size) {
     EVP_PKEY_free(pkey);
     EC_KEY_free(ec_key);
-    fprintf(stderr, "Failed to convert bignum to binary.\n");
+    fprintf(stderr, "Private key size is larger than provided buffer.\n");
+    return 0;
+  }
+
+  if (BN_bn2bin(priv_key_bn, private_key) != bn_size) {
+    EVP_PKEY_free(pkey);
+    EC_KEY_free(ec_key);
+    fprintf(stderr, "Failed to convert private key to binary.\n");
+    return 0;
   }
 
   EVP_PKEY_free(pkey);
@@ -119,92 +118,81 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
 
 
 /*
- * Function reads public key's PEM file and stores it in a given array as binary data.
- * Note that the array will contain a compressed public key.
+ * Function reads public key's PEM file and stores it as compressed binary data.
  *
  * Arguments:
- * - pubkey_file: PEM formatted file (extension is .pem) from which the public key
- *                will be read and stored in an array as binary data.
- * - public_key: An array where the compressed public key will be stored.
- * - compressed_key_size: Size of array. Basically compressed public key size is 33 byte.
+ * - pubkey_file: PEM formatted file (.pem extension) containing the public key
+ * - public_key: Output buffer to store the compressed public key binary data
+ * - compressed_key_size: Size of output buffer. For ECDSA compressed public keys,
+ *                       this should be 33 bytes.
  *
  * Returns:
- * - 1 if reading PEM file and storing data to array was successful.
- * - 0 if it cannot open the provided PEM file, cannot read the provided PEM file,
- *     fails to convert EVP_PKEY to EC_KEY, or fails to read compressed EC public key.
+ * - 1 on success: Public key was read and stored successfully
+ * - 0 on failure: Returns 0 if any of the following operations fail:
+ *     - Invalid PEM file format or missing file
+ *     - Invalid input parameters
+ *     - Reading or parsing the PEM file
+ *     - Converting key formats
+ *     - Compressing the public key
  */
 int ReadPublicKeyPemFile(const char* pubkey_file,
                          uint8_t public_key[],
                          const unsigned int compressed_key_size) {
-
-  /* Sanity checking of arguments. */
-  const int error_code = VerifyPemFileFormat(pubkey_file);
-  if (error_code == 0) {
+  /* Validate input parameters */
+  if (!VerifyPemFileFormat(pubkey_file)) {
     return 0;
   }
 
   if (public_key == NULL) {
-    fprintf(stderr, "Public key's array cannot be null.\n");
+    fprintf(stderr, "Public key output buffer cannot be NULL\n");
     return 0;
   }
 
   if (compressed_key_size == 0) {
-    fprintf(stderr, "Public key's array size cannot be null. "
-                    "Basically compressed key size of ECDSA public key is 33.\n");
+    fprintf(stderr, "Invalid compressed key size. Expected 33 bytes for ECDSA "
+                    "compressed public key\n");
     return 0;
   }
 
-
+  /* Open and read the PEM file */
   FILE* pem_file = fopen(pubkey_file, "r");
   if (pem_file == NULL) {
-    fprintf(stderr, "Unable to open public key's pem file or it does not exist.\n");
+    fprintf(stderr, "Failed to open public key PEM file\n");
     return 0;
   }
 
   EVP_PKEY* pkey = PEM_read_PUBKEY(pem_file, NULL, NULL, NULL);
+  fclose(pem_file);
+
   if (pkey == NULL) {
-    fclose(pem_file);
-    fprintf(stderr, "Failed to read PEM format public key.\n");
+    fprintf(stderr, "Failed to parse public key from PEM file\n");
     return 0;
   }
 
-  /* We do not need pem file anymore. */
-  fclose(pem_file);
-
-  /*
-   * Extract EC-specific key from the EVP_PKEY structure. EVP_PKEY_get1_EC_KEY()
-   * increments the reference count, so we must call EC_KEY_free() later to avoid
-   * memory leaks. Returns NULL if pkey does not contain an EC key.
-   *
-   * The returned EC_KEY must be freed with EC_KEY_free() when no longer needed.
-   * EC_KEY_free() decrements the reference count and frees the memory if the
-   * count reaches zero.
-   */
+  /* Convert to EC key format */
   EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to convert EVP_PKEY to EC_KEY.\n");
+    fprintf(stderr, "Failed to extract EC key from EVP_PKEY\n");
     return 0;
   }
 
+  /* Set compressed point format */
   EC_KEY_set_conv_form(ec_key, POINT_CONVERSION_COMPRESSED);
 
-  /*
-   * Convert public key to compressed format and store it in public_key array.
-   * i2o_ECPublicKey() alters the input pointer during conversion, so we need
-   * to save the original pointer to avoid losing track of the array start.
-   * The function returns the number of bytes written.
-   */
+  /* Convert to binary, preserving original buffer pointer */
   uint8_t* pub_copy = public_key;
   const int key_size = i2o_ECPublicKey(ec_key, &pub_copy);
+  
   if (key_size != compressed_key_size) {
     EVP_PKEY_free(pkey);
     EC_KEY_free(ec_key);
-    fprintf(stderr, "Failed to read compressed EC public key.\n");
+    fprintf(stderr, "Compressed key size mismatch. Got %d bytes, expected %u\n",
+            key_size, compressed_key_size);
     return 0;
   }
 
-  /* Free memory. */
+  /* Cleanup */
   EVP_PKEY_free(pkey);
   EC_KEY_free(ec_key);
 
