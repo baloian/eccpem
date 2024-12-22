@@ -170,7 +170,7 @@ int ReadPublicKeyPemFile(const char* pubkey_file,
   }
 
   /* Convert to EC key format */
-  EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
+  EVP_PKEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
     EVP_PKEY_free(pkey);
     fprintf(stderr, "Failed to extract EC key from EVP_PKEY\n");
@@ -186,7 +186,7 @@ int ReadPublicKeyPemFile(const char* pubkey_file,
   
   if (key_size != compressed_key_size) {
     EVP_PKEY_free(pkey);
-    EC_KEY_free(ec_key);
+    EVP_PKEY_free(ec_key);
     fprintf(stderr, "Compressed key size mismatch. Got %d bytes, expected %u\n",
             key_size, compressed_key_size);
     return 0;
@@ -194,7 +194,7 @@ int ReadPublicKeyPemFile(const char* pubkey_file,
 
   /* Cleanup */
   EVP_PKEY_free(pkey);
-  EC_KEY_free(ec_key);
+  EVP_PKEY_free(ec_key);
 
   return 1;
 }
