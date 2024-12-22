@@ -6,7 +6,7 @@
  * AUTHOR: Artiom Baloian <artiom.baloian@nyu.edu>
  *
  * DESCRIPTION:
- * File provides API for uni tests.
+ * File provides API for unit tests.
  */
 
 
@@ -15,23 +15,30 @@
 
 #include <string.h>
 #include <assert.h>
-
+#include <stdio.h>
 
 /*
  * Compare two null-terminated strings. It fails if one of arguments is NULL or
  * any character is different or if the lengths are different.
  */
 void TEST_ASSERT_EQUAL_STRING(const char *expected, const char *actual) {
-
-  assert(expected != NULL);
-  assert(actual != NULL);
+  if (expected == NULL) {
+    fprintf(stderr, "TEST_ASSERT_EQUAL_STRING failed: expected string is NULL\n");
+    assert(0);
+  }
+  if (actual == NULL) {
+    fprintf(stderr, "TEST_ASSERT_EQUAL_STRING failed: actual string is NULL\n");
+    assert(0);
+  }
 
   const int ret_value = strcmp(expected, actual);
-
-  assert(ret_value == 0);
+  if (ret_value != 0) {
+    fprintf(stderr, "TEST_ASSERT_EQUAL_STRING failed:\n");
+    fprintf(stderr, "Expected: \"%s\"\n", expected);
+    fprintf(stderr, "Actual  : \"%s\"\n", actual);
+    assert(0);
+  }
 }
-
-
 
 /*
  * Compare two null-terminated strings. It fails if one of arguments is NULL or
@@ -39,25 +46,35 @@ void TEST_ASSERT_EQUAL_STRING(const char *expected, const char *actual) {
  * same characters).
  */
 void TEST_ASSERT_NOT_EQUAL_STRING(const char *expected, const char *actual) {
-  
-  assert(expected != NULL);
-  assert(actual != NULL);
+  if (expected == NULL) {
+    fprintf(stderr, "TEST_ASSERT_NOT_EQUAL_STRING failed: expected string is NULL\n");
+    assert(0);
+  }
+  if (actual == NULL) {
+    fprintf(stderr, "TEST_ASSERT_NOT_EQUAL_STRING failed: actual string is NULL\n");
+    assert(0);
+  }
 
   const int ret_value = strcmp(expected, actual);
-
-  assert(ret_value != 0);
+  if (ret_value == 0) {
+    fprintf(stderr, "TEST_ASSERT_NOT_EQUAL_STRING failed:\n");
+    fprintf(stderr, "Expected strings to be different but both are: \"%s\"\n", expected);
+    assert(0);
+  }
 }
-
-
 
 /*
  * Compare two integers for equality. A cast will be performed to your natural
- * integer size. Failes if expected integer value is not equal to actual integer
+ * integer size. Fails if expected integer value is not equal to actual integer
  * value.
  */
 void TEST_ASSERT_EQUAL_INT(const int expected, const int actual) {
-  assert(expected == actual);
+  if (expected != actual) {
+    fprintf(stderr, "TEST_ASSERT_EQUAL_INT failed:\n");
+    fprintf(stderr, "Expected: %d\n", expected);
+    fprintf(stderr, "Actual  : %d\n", actual);
+    assert(0);
+  }
 }
 
 #endif
-
