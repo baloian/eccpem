@@ -20,6 +20,8 @@
 #include <openssl/ec.h>
 #include <openssl/bio.h>
 #include <openssl/pem.h>
+#include <openssl/core_names.h>
+#include <openssl/param_build.h>
 
 /*
  * Function reads private key's PEM file and stores it in a given array as binary data.
