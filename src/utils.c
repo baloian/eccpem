@@ -30,8 +30,8 @@
  */
 int VerifyPemFileFormat(const char* pem_file) {
   if (pem_file == NULL) {
-    fprintf(stderr, "Provided public/private key file can not be NULL. "
-                    "It must be PEM format (extension is .pem).\n");
+    fprintf(stderr, "Provided public/private key file must be PEM "
+                    "format (extension is .pem).\n");
     return 0;
   }
   /* Key files must be in PEM format with .pem extension. */
