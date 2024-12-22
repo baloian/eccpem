@@ -29,27 +29,24 @@
  *     PEM-formatted.
  */
 int VerifyPemFileFormat(const char* pem_file) {
-
   if (pem_file == NULL) {
-    fprintf(stderr, "Error: Provided public/private key file cannot be NULL "
-                    "it must be PEM format.\n");
+    fprintf(stderr, "Provided public/private key file cannot be NULL. "
+                    "It must be PEM format.\n");
     return 0;
   }
-
   /* Key files must be in PEM format with .pem extension. */
   const char* pem_file_last_dot = strrchr(pem_file, '.');
   if (pem_file_last_dot == NULL) {
-    fprintf(stderr, "Error: Provided public/private key file must be PEM "
+    fprintf(stderr, "Provided public/private key file must be PEM "
                     "format (extension is .pem).\n");
     return 0;
   } else {
     if (strcmp(pem_file_last_dot, ".pem") != 0) {
-      fprintf(stderr, "Error: Provided public/private key file must be PEM "
+      fprintf(stderr, "Provided public/private key file must be PEM "
                       "format (extension is .pem).\n");
       return 0;
     }
   }
-
   return 1;
 }
 
