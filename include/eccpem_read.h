@@ -6,7 +6,7 @@
  * AUTHOR: Artiom Baloian <artiom.baloian@nyu.edu>
  *
  * DESCRIPTION:
- * File provides functionality to read Elliptic Curve Cryptography key pairs
+ * File provides functionality to read Elliptic Curve Cryptography (ECC) key pairs
  * from PEM formatted files.
  */
 
@@ -21,22 +21,19 @@ extern "C" {
 #include <openssl/ec.h>
 
 /*
- * Function reads private key's pem file and stores it in a given array as a
- * binary data.
+ * Function reads private key's PEM file and stores it in a given array as binary data.
  *
  * Arguments:
- * - privkey_file: PEM formatted file (extension is .pem) from where it is going
- *                 to be read private key and store in an array as a binary data.
- * - private_key: An array where is going to be stored private key.
- * - key_size: Size of array. Run $ openssl ecparam -list_curves command in
- *             order to see binary size of specific crypto algorithm.
- *
+ * - privkey_file: PEM formatted file (extension is .pem) from which the private key
+ *                 will be read and stored in an array as binary data.
+ * - private_key: An array where the private key will be stored.
+ * - key_size: Size of array. Run `$ openssl ecparam -list_curves` command to see
+ *            the binary size of the specific cryptographic algorithm.
  *
  * Returns:
- * - 1 if readind pem file and storing data to array was successful.
- * - 0 if it cannot open provided PEM file or cannot read provided PEM file
- *     or fails to convert EVP_PKEY to EC_KEY or fails to convert bignum to
- *     binary.
+ * - 1 if reading PEM file and storing data to array was successful.
+ * - 0 if it cannot open the provided PEM file, cannot read the provided PEM file,
+ *     fails to convert EVP_PKEY to EC_KEY, or fails to convert bignum to binary.
  */
 int ReadPrivateKeyPemFile(const char* privkey_file,
                           uint8_t private_key[],
@@ -45,21 +42,19 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
 
 
 /*
- * Function reads public key's pem file and stores it in a given array as a
- * binary data.
+ * Function reads public key's PEM file and stores it in a given array as binary data.
+ * Note that the array will contain a compressed public key.
  *
  * Arguments:
- * - pubkey_file: PEM formatted file (extension is .pem) from where it is going
- *                to be read public key and store in an array as a binary data.
- * - public_key: An array where is going to be stored compressed public key.
- * - key_size: Size of array. Basically compressed public key size is 33 byte.
- *
+ * - pubkey_file: PEM formatted file (extension is .pem) from which the public key
+ *                will be read and stored in an array as binary data.
+ * - public_key: An array where the compressed public key will be stored.
+ * - compressed_key_size: Size of array. Basically compressed public key size is 33 byte.
  *
  * Returns:
- * - 1 if readind pem file and storing data to array was successful.
- * - 0 if it cannot open provided PEM file or cannot read provided PEM file
- *     or fails to convert EVP_PKEY to EC_KEY or files to read compressed EC
- *     public key.
+ * - 1 if reading PEM file and storing data to array was successful.
+ * - 0 if it cannot open the provided PEM file, cannot read the provided PEM file,
+ *     fails to convert EVP_PKEY to EC_KEY, or fails to read compressed EC public key.
  */
 int ReadPublicKeyPemFile(const char* pubkey_file,
                          uint8_t public_key[],
