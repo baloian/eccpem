@@ -12,7 +12,7 @@ int main() {
   if (error_code == 1) {
     printf("Generation of ECC key pairs was successful.\n");
   } else {
-    printf("Generation of ECC key pairs filed.\n");
+    printf("Generation of ECC key pairs failed.\n");
   }
 
   return 0;

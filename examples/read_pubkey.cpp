@@ -27,7 +27,7 @@ int main() {
     const std::string hex_pubkey = ArrayToHexString(pub_key, compressed_size);
     std::cout << "Compressed public key in hex format: " << hex_pubkey << "\n";
   } else {
-    std::cerr << "Reading public key from PEM file filed.\n";
+    std::cerr << "Reading public key from PEM file failed.\n";
   }
 
   delete []pub_key;
@@ -49,10 +49,10 @@ std::string ArrayToHexString(const uint8_t array[], const unsigned int size) {
   // Two digits for per uint8_t array character.
   std::string hex_str(2 * size, '\0');
 
-  // If we devide value of uint8_t array character to 16 (char/16 or char%16)
-  // the result should be one of hex values.
-  // Note that we support only uppercase letters. For example, 12fe is not valid
-  // despite it is an hex format, it must be 12FE.
+  // If we divide a uint8_t array value by 16 (value/16 or value%16),
+  // the result will be one of the hex digits.
+  // Note that we only support uppercase letters. For example, '12fe' is not valid
+  // even though it is in hex format - it must be '12FE'.
   const std::string hex_code = "0123456789ABCDEF";
 
   const short int base = 16;

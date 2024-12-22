@@ -9,13 +9,11 @@ int main() {
 
   const std::string ec_type = "secp256k1";
 
-  const int error_code = CreateECCKeysPemFiles(ec_type.c_str(),
-                                               pubkey_file.c_str(),
-                                               privkey_file.c_str());
+  const int error_code = CreateECCKeysPemFiles(ec_type.c_str(), pubkey_file.c_str(), privkey_file.c_str());
   if (error_code == 1) {
     std::cout << "Generation of ECC key pairs was successful.\n";
   } else {
-    std::cout << "Generation of ECC key pairs filed.\n";
+    std::cout << "Generation of ECC key pairs failed.\n";
   }
 
   return 0;
