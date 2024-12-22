@@ -43,7 +43,6 @@
 int CreateECCKeysPemFiles(const char* ec_type,
                           const char* pubkey_file,
                           const char* privkey_file) {
-
   /* Sanity checking of arguments. */
   if (ec_type == NULL) {
     fprintf(stderr, "Elliptic Curve type cannot be NULL. "
@@ -51,90 +50,51 @@ int CreateECCKeysPemFiles(const char* ec_type,
     return 0;
   }
 
-  int error_code = VerifyPemFileFormat(pubkey_file);
-  if (error_code == 0) {
+  /* Verify both key files have .pem extension */
+  if (!VerifyPemFileFormat(pubkey_file) || !VerifyPemFileFormat(privkey_file)) {
     return 0;
   }
 
-  error_code = VerifyPemFileFormat(privkey_file);
-  if (error_code == 0) {
+  /* Create a new EVP_PKEY context for key generation */
+  EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+  if (ctx == NULL) {
+    fprintf(stderr, "Creating EVP_PKEY_CTX failed.\n");
     return 0;
   }
 
-  /* Initialize openssl functions. */
-  OpenSSL_add_all_algorithms();
-
-  /* Create a EC key structure, setting the group type from NID. */
-  const int ecc_group_ty = OBJ_txt2nid(ec_type);
-  EC_KEY* ec_key = EC_KEY_new_by_curve_name(ecc_group_ty);
-  if (ec_key == NULL) {
-    fprintf(stderr, "Creating a new OpenSSL EC_KEY object failed.\n");
+  /* Initialize key generation */
+  if (EVP_PKEY_keygen_init(ctx) <= 0) {
+    fprintf(stderr, "Initializing key generation failed.\n");
+    EVP_PKEY_CTX_free(ctx);
     return 0;
   }
 
-  /* For certificate signing, we use  the OPENSSL_EC_NAMED_CURVE flag. */
-  EC_KEY_set_asn1_flag(ec_key, OPENSSL_EC_NAMED_CURVE);
-
-  /*
-   * Generates a new public and private key for the supplied ec_key object.
-   * ec_key must have an EC_GROUP object associated with it before calling
-   * this function.
-   */
-  error_code = EC_KEY_generate_key(ec_key);
-  if (error_code == 0) {
-    fprintf(stderr, "Generating a new EC public and private key failed.\n");
-    EC_KEY_free(ec_key);
+  /* Set the EC curve by name */
+  if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, OBJ_txt2nid(ec_type)) <= 0) {
+    fprintf(stderr, "Setting EC curve parameters failed.\n");
+    EVP_PKEY_CTX_free(ctx);
     return 0;
   }
 
-  /*
-   * Converting the EC key into a EVP_PKEY structure in order to handle the key
-   * just like any other key pair.
-   */
-  EVP_PKEY* pkey = EVP_PKEY_new();
-  if (pkey == NULL) {
-    fprintf(stderr, "Generating the newly allocated EVP_PKEY failed.\n");
-    EC_KEY_free(ec_key);
-    return 0;
-  }
-
-  error_code = EVP_PKEY_assign_EC_KEY(pkey, ec_key);
-  if (error_code == 0) {
-    fprintf(stderr, "Error assigning EC_KEY key to EVP_PKEY structure.\n");
-    EVP_PKEY_free(pkey);
-    EC_KEY_free(ec_key);
-    return 0;
-  }
-
-  /*
-   * Extract EC-specific key from the EVP_PKEY structure. EVP_PKEY_get1_EC_KEY()
-   * increments the reference count, so we must call EC_KEY_free() later to avoid
-   * memory leaks. Returns NULL if pkey does not contain an EC key.
-   *
-   * The returned EC_KEY must be freed with EC_KEY_free() when no longer needed.
-   * EC_KEY_free() decrements the reference count and frees the memory if the
-   * count reaches zero.
-   */
-  ec_key = EVP_PKEY_get1_EC_KEY(pkey);
-  if (ec_key == NULL) {
-    fprintf(stderr, "Error: getting referenced EVP_PKEY. ");
-    fprintf(stderr, "EVP_PKEY key structure is not of the correct type.\n");
-    EVP_PKEY_free(pkey);
+  /* Generate the key pair */
+  EVP_PKEY *pkey = NULL;
+  if (EVP_PKEY_keygen(ctx, &pkey) <= 0) {
+    fprintf(stderr, "Generating EC key pair failed.\n");
+    EVP_PKEY_CTX_free(ctx);
     return 0;
   }
 
   /* Write private and public keys' (binary data) in PEM format. */
-  error_code = WriteKeysToPEMFiles(pkey, pubkey_file, privkey_file);
-  if (error_code == 0) {
+  if (!WriteKeysToPEMFiles(pkey, pubkey_file, privkey_file)) {
     fprintf(stderr, "Writing private and public keys in PEM format files failed.\n");
     EVP_PKEY_free(pkey);
-    EC_KEY_free(ec_key);
+    EVP_PKEY_CTX_free(ctx);
     return 0;
   }
 
-  /* Free memory. */
+  /* Free memory */
   EVP_PKEY_free(pkey);
-  EC_KEY_free(ec_key);
+  EVP_PKEY_CTX_free(ctx);
 
   return 1;
 }
@@ -158,49 +118,33 @@ int CreateECCKeysPemFiles(const char* ec_type,
 static int WriteKeysToPEMFiles(EVP_PKEY* pkey,
                                const char* pubkey_file,
                                const char* privkey_file) {
-
-  /* Create the Input/Output BIO's. */
-  BIO* out_bio  = BIO_new(BIO_s_file());
-  if (out_bio == NULL) {
-    fprintf(stderr, "Creating a new OpenSSL BIO failed.\n");
+  /* Write private key to file */
+  FILE* privkey_fp = fopen(privkey_file, "w");
+  if (privkey_fp == NULL) {
+    fprintf(stderr, "Unable to open private key file for writing.\n");
     return 0;
   }
 
-  /* Prepare file and BIO for writing private key data in PEM format. */
-  out_bio = BIO_new_file(privkey_file, "w");
-  if (out_bio == NULL) {
-    fprintf(stderr, "Unable to create a new PEM file BIO with writing mode.\n");
-    BIO_free_all(out_bio);
-    return 0;
-  }
-
-  /* Write private key data in PEM format. */
-  int error_code = PEM_write_bio_PrivateKey(out_bio, pkey, NULL, NULL, 0, 0, NULL);
-  if (error_code == 0) {
+  if (!PEM_write_PrivateKey(privkey_fp, pkey, NULL, NULL, 0, NULL, NULL)) {
     fprintf(stderr, "Error writing private key data in PEM format.\n");
-    BIO_free_all(out_bio);
+    fclose(privkey_fp);
+    return 0;
+  }
+  fclose(privkey_fp);
+
+  /* Write public key to file */
+  FILE* pubkey_fp = fopen(pubkey_file, "w");
+  if (pubkey_fp == NULL) {
+    fprintf(stderr, "Unable to open public key file for writing.\n");
     return 0;
   }
 
-  /* Prepare file and BIO for writing public key data in PEM format. */
-  out_bio = BIO_new_file(pubkey_file, "w");
-  if (out_bio == NULL) {
-    fprintf(stderr, "Unable to create a new PEM file BIO with writing mode.\n");
-    BIO_free_all(out_bio);
-    return 0;
-  }
-
-  /*  Write public key data in PEM format. */
-  error_code = PEM_write_bio_PUBKEY(out_bio, pkey);
-  if (error_code == 0) {
+  if (!PEM_write_PUBKEY(pubkey_fp, pkey)) {
     fprintf(stderr, "Error writing public key data in PEM format.\n");
-    BIO_free_all(out_bio);
+    fclose(pubkey_fp);
     return 0;
   }
-
-  /* Free memory. */
-  BIO_free_all(out_bio);
-
+  fclose(pubkey_fp);
   return 1;
 }
 
