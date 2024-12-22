@@ -119,21 +119,19 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
 
 
 /*
- * Function reads public key's pem file and stores it in a given array as a
- * binary data.
+ * Function reads public key's PEM file and stores it in a given array as binary data.
+ * Note that the array will contain a compressed public key.
  *
- * Arguments:            
- * - pubkey_file: PEM formatted file (extension is .pem) from where it is going
- *                to be read public key and store in an array as a binary data.
- * - public_key: An array where is going to be stored compressed public key.
- * - key_size: Size of array. Basically compressed public key size is 33 byte.
- *
+ * Arguments:
+ * - pubkey_file: PEM formatted file (extension is .pem) from which the public key
+ *                will be read and stored in an array as binary data.
+ * - public_key: An array where the compressed public key will be stored.
+ * - compressed_key_size: Size of array. Basically compressed public key size is 33 byte.
  *
  * Returns:
- * - 1 if readind pem file and storing data to array was successful.
- * - 0 if it cannot open provided PEM file or cannot read provided PEM file
- *     or fails to convert EVP_PKEY to EC_KEY or files to read compressed EC
- *     public key.
+ * - 1 if reading PEM file and storing data to array was successful.
+ * - 0 if it cannot open the provided PEM file, cannot read the provided PEM file,
+ *     fails to convert EVP_PKEY to EC_KEY, or fails to read compressed EC public key.
  */
 int ReadPublicKeyPemFile(const char* pubkey_file,
                          uint8_t public_key[],
@@ -174,11 +172,13 @@ int ReadPublicKeyPemFile(const char* pubkey_file,
   fclose(pem_file);
 
   /*
-   * Extract EC-specifics from the key, it returns the referenced key in pkey
-   * or NULL if the key is not of the correct type.
-   * We should do it because EC_KEY_free() decrements the reference count for
-   * the EC_KEY object, and if it has dropped to zero then frees the memory
-   * associated with it.
+   * Extract EC-specific key from the EVP_PKEY structure. EVP_PKEY_get1_EC_KEY()
+   * increments the reference count, so we must call EC_KEY_free() later to avoid
+   * memory leaks. Returns NULL if pkey does not contain an EC key.
+   *
+   * The returned EC_KEY must be freed with EC_KEY_free() when no longer needed.
+   * EC_KEY_free() decrements the reference count and frees the memory if the
+   * count reaches zero.
    */
   EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
@@ -191,7 +191,9 @@ int ReadPublicKeyPemFile(const char* pubkey_file,
 
   /*
    * Convert public key to compressed format and store it in public_key array.
-   * i2o_ECPublicKey alters the input pointer, save your original pointer.
+   * i2o_ECPublicKey() alters the input pointer during conversion, so we need
+   * to save the original pointer to avoid losing track of the array start.
+   * The function returns the number of bytes written.
    */
   uint8_t* pub_copy = public_key;
   const int key_size = i2o_ECPublicKey(ec_key, &pub_copy);
