@@ -75,7 +75,7 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
 
   /* Get the private key as a BIGNUM */
   const BIGNUM* priv_key_bn = NULL;
-  EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
+  EVP_PKEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
     EVP_PKEY_free(pkey);
     fprintf(stderr, "Failed to convert EVP_PKEY to EC_KEY.\n");
@@ -85,7 +85,7 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
   priv_key_bn = EC_KEY_get0_private_key(ec_key);
   if (priv_key_bn == NULL) {
     EVP_PKEY_free(pkey);
-    EC_KEY_free(ec_key);
+    EVP_PKEY_free(ec_key);
     fprintf(stderr, "Failed to get private key as BIGNUM.\n");
     return 0;
   }
@@ -97,20 +97,20 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
   const int bn_size = BN_num_bytes(priv_key_bn);
   if (bn_size > key_size) {
     EVP_PKEY_free(pkey);
-    EC_KEY_free(ec_key);
+    EVP_PKEY_free(ec_key);
     fprintf(stderr, "Private key size is larger than provided buffer.\n");
     return 0;
   }
 
   if (BN_bn2bin(priv_key_bn, private_key) != bn_size) {
     EVP_PKEY_free(pkey);
-    EC_KEY_free(ec_key);
+    EVP_PKEY_free(ec_key);
     fprintf(stderr, "Failed to convert private key to binary.\n");
     return 0;
   }
 
   EVP_PKEY_free(pkey);
-  EC_KEY_free(ec_key);
+  EVP_PKEY_free(ec_key);
 
   return 1;
 }
