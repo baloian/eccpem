@@ -18,7 +18,7 @@ Function generates Elliptic Curve Cryptography (ECC) key pairs and writes them t
 
 **Returns:**
 - 1 if generation of key pairs and writing them to PEM files was successful.
-- 0 if Creating a new OpenSSL EC_KEY object and writing to PEM files failed.
+- 0 if creating a new OpenSSL EC_KEY object and writing to PEM files failed.
 
 
 ---
