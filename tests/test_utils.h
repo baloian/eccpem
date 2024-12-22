@@ -17,7 +17,7 @@ void RUN_UTILS_TESTS() {
   // Test invalid extension
   const char* not_pem_file = "test_pemfile.not_pem";
   printf("\nExpected error message:\n"
-         "Error: Provided public/private key file must be PEM format (extension is .pem).\n");
+         "Provided public/private key file must be PEM format (extension is .pem).\n");
   printf("Actual output:\n");
   ret_value = VerifyPemFileFormat(not_pem_file);
   TEST_ASSERT_EQUAL_INT(ret_value, 0);
@@ -25,7 +25,7 @@ void RUN_UTILS_TESTS() {
 
   // Test NULL input
   printf("\nExpected error message:\n"
-         "Error: Provided public/private key file cannot be NULL it must be PEM format.\n");
+         "Provided public/private key file must be PEM format (extension is .pem).\n");
   printf("Actual output:\n");
   ret_value = VerifyPemFileFormat(NULL);
   TEST_ASSERT_EQUAL_INT(ret_value, 0);
@@ -33,7 +33,7 @@ void RUN_UTILS_TESTS() {
 
   // Test empty string
   printf("\nExpected error message:\n"
-         "Error: Provided public/private key file cannot be NULL it must be PEM format.\n");
+         "Provided public/private key file must be PEM format (extension is .pem).\n");
   printf("Actual output:\n");
   ret_value = VerifyPemFileFormat("");
   TEST_ASSERT_EQUAL_INT(ret_value, 0);
