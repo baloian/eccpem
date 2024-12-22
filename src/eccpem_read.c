@@ -1,13 +1,15 @@
 /*
- * ===--- eccpem_read.h -----------------------------------------------------===
+ * ===--- eccpem_read.c -----------------------------------------------------===
  *
  * This file is distributed under the MIT License. See LICENSE for details.
  *
  * AUTHOR: Artiom Baloian <artiom.baloian@nyu.edu>
  *
  * DESCRIPTION:
- * File provides functionality to read Elliptic Curve Cryptography key pairs
- * from PEM formatted files.
+ * File provides functionality to read Elliptic Curve Cryptography (ECC) key pairs
+ * from PEM formatted files. The functions in this file allow reading both private
+ * and public keys from PEM files and converting them into binary format for use
+ * in cryptographic operations.
  */
 
 #include "eccpem_read.h"
@@ -20,22 +22,19 @@
 #include <openssl/pem.h>
 
 /*
- * Function reads private key's pem file and stores it in a given array as a
- * binary data.
+ * Function reads private key's PEM file and stores it in a given array as binary data.
  *
  * Arguments:
- * - privkey_file: PEM formatted file (extension is .pem) from where it is going
- *                 to be read private key and store in an array as a binary data.
- * - private_key: An array where is going to be stored private key.
- * - key_size: Size of array. Run $ openssl ecparam -list_curves command in
- *             order to see binary size of specific crypto algorithm.
- *
+ * - privkey_file: PEM formatted file (extension is .pem) from which the private key
+ *                 will be read and stored in an array as binary data.
+ * - private_key: An array where the private key will be stored.
+ * - key_size: Size of array. Run `$ openssl ecparam -list_curves` command to see
+ *            the binary size of the specific cryptographic algorithm.
  *
  * Returns:
- * - 1 if readind pem file and storing data to array was successful.
- * - 0 if it cannot open provided PEM file or cannot read provided PEM file
- *     or fails to convert EVP_PKEY to EC_KEY or fails to convert bignum to
- *     binary.
+ * - 1 if reading PEM file and storing data to array was successful.
+ * - 0 if it cannot open the provided PEM file, cannot read the provided PEM file,
+ *     fails to convert EVP_PKEY to EC_KEY, or fails to convert bignum to binary.
  */
 int ReadPrivateKeyPemFile(const char* privkey_file,
                           uint8_t private_key[],
@@ -76,11 +75,13 @@ int ReadPrivateKeyPemFile(const char* privkey_file,
   fclose(pem_file);
 
   /*
-   * Extract EC-specifics from the key, it returns the referenced key in pkey
-   * or NULL if the key is not of the correct type.
-   * We should do it because EC_KEY_free() decrements the reference count for
-   * the EC_KEY object, and if it has dropped to zero then frees the memory
-   * associated with it.
+   * Extract EC-specific key from the EVP_PKEY structure. This returns a pointer
+   * to the EC_KEY structure contained within pkey, or NULL if pkey does not
+   * contain an EC key.
+   *
+   * Note: We use get1 instead of get0 to increment the reference count, since
+   * EC_KEY_free() will later decrement it. If the reference count reaches zero,
+   * the EC_KEY structure will be freed.
    */
   EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
