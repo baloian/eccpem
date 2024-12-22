@@ -1,6 +1,11 @@
 # ECCPEM Documentation
 
-#### 1. `CreateECCKeysPemFiles`
+- [Create ECC Keys PEM Files](#create-ecc-keys-pem-files)
+- [Read Private Key PEM File](#read-private-key-pem-file)
+- [Read Public Key PEM File](#read-public-key-pem-file)
+
+
+## Create ECC Keys PEM Files
 ```c
 int CreateECCKeysPemFiles(const char* ec_type, const char* pubkey_file,  const char* privkey_file);
 ```
@@ -21,7 +26,7 @@ Function generates Elliptic Curve Cryptography (ECC) key pairs and writes them t
 
 
 
-#### 2. `ReadPrivateKeyPemFile`
+## Read Private Key PEM File
 ```c
 int ReadPrivateKeyPemFile(const char* privkey_file, uint8_t private_key[], const unsigned int key_size);
 ```
@@ -45,7 +50,7 @@ Function reads private key's PEM file and stores it in a given array as binary d
 
 
 
-#### 3. `ReadPublicKeyPemFile`
+## Read Public Key PEM File
 ```c
 int ReadPublicKeyPemFile(const char* pubkey_file, uint8_t public_key[], const unsigned int compressed_key_size);
 ```
