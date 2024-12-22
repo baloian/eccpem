@@ -6,9 +6,8 @@
  * AUTHOR: Artiom Baloian <artiom.baloian@nyu.edu>
  *
  * DESCRIPTION:
- * File provides Elliptic Curve Cryptography key pairs generator, write keys
- * to PEM formatted files and file format verification functions'
- * implementation.
+ * File provides functionality to generate Elliptic Curve Cryptography key pairs,
+ * write keys to PEM formatted files, and verify file formats.
  */
 
 #include "eccpem_write.h"
@@ -21,26 +20,25 @@
 #include <openssl/pem.h>
 
 /*
- * Function generates Elliptic Curve Cryptography - ECC key pairs and writes to
- * PEM formatted files for private and public keys separately.
- * Function rewrites provided file if it exists or creates a new file if it does
- * not exist.
+ * Function generates an Elliptic Curve Cryptography (ECC) key pair and writes the
+ * public and private keys to separate PEM formatted files. If the specified files
+ * already exist, they will be overwritten. Otherwise, new files will be created.
  *
  * Arguments:
- * - ec_type: Elliptic Curve type. To list the supported curves run:
- *            $ openssl ecparam -list_curves
- * - pubkey_file: PEM formatted file (extension is .pem) where is going to be
- *                stored public key.
- * - privkey_file: PEM formatted file (extension is .pem) where is going to be
- *                 stored private key.
+ * - ec_type: The type of elliptic curve to use for key generation. Must be a valid
+ *            curve name as listed by the command: openssl ecparam -list_curves
+ * - pubkey_file: Path to the PEM file (.pem extension) where the public key will
+ *                be written
+ * - privkey_file: Path to the PEM file (.pem extension) where the private key will
+ *                 be written
  *
  * Returns:
- * - 1 if generation of key pairs was successful.
- * - 0 if Creating a new OpenSSL EC_KEY object failed,
- *     generates a new EC public and private key failed,
- *     generating the newly allocated EVP_PKEY failed,
- *     error assigning EC_KEY key to EVP_PKEY structure or
- *     writing private and public keys in PEM format files failed.
+ * - 1 on success: Key pair was generated and written to files successfully
+ * - 0 on failure: Returns 0 if any of the following operations fail:
+ *     - Creating the OpenSSL EC_KEY object
+ *     - Generating the EC key pair
+ *     - Allocating or configuring the EVP_PKEY structure
+ *     - Writing either the public or private key to their respective PEM files
  */
 int CreateECCKeysPemFiles(const char* ec_type,
                           const char* pubkey_file,
@@ -109,11 +107,13 @@ int CreateECCKeysPemFiles(const char* ec_type,
   }
 
   /*
-   * Extract EC-specifics from the key, it returns the referenced key in pkey
-   * or NULL if the key is not of the correct type.
-   * We should do it because EC_KEY_free() decrements the reference count for
-   * the EC_KEY object, and if it has dropped to zero then frees the memory
-   * associated with it.
+   * Extract EC-specific key from the EVP_PKEY structure. EVP_PKEY_get1_EC_KEY()
+   * increments the reference count, so we must call EC_KEY_free() later to avoid
+   * memory leaks. Returns NULL if pkey does not contain an EC key.
+   *
+   * The returned EC_KEY must be freed with EC_KEY_free() when no longer needed.
+   * EC_KEY_free() decrements the reference count and frees the memory if the
+   * count reaches zero.
    */
   ec_key = EVP_PKEY_get1_EC_KEY(pkey);
   if (ec_key == NULL) {
@@ -142,18 +142,18 @@ int CreateECCKeysPemFiles(const char* ec_type,
 
 
 /*
- * Function writes private and public keys, represented by EVP_PKEY structure,
- * in given files. It rewrites provided file if it exists or creates a new file
- * if it does not exist.
+ * Function writes private and public keys to PEM formatted files. The keys are
+ * represented by an EVP_PKEY structure. If the target files already exist, they
+ * will be overwritten. If they don't exist, new files will be created.
  *
  * Arguments:
- * - pkey: EVP_PKEY structure, which represents private and public keys.
- * - pubkey_file: Public key file, it must be PEM format.
- * - privkey_file: Private key file, it must be PEM format.
+ * - pkey: EVP_PKEY structure containing both the private and public keys
+ * - pubkey_file: Path where the public key will be written in PEM format (.pem extension)
+ * - privkey_file: Path where the private key will be written in PEM format (.pem extension)
  *
- * Return:
- * - 1 if PEM files are created successfully.
- * - 0 if creating PEM files failed.
+ * Returns:
+ * - 1 if both PEM files were written successfully
+ * - 0 if creating or writing to either PEM file failed, or if any other error occurred
  */
 static int WriteKeysToPEMFiles(EVP_PKEY* pkey,
                                const char* pubkey_file,

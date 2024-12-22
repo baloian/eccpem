@@ -6,7 +6,7 @@
  * AUTHOR: Artiom Baloian <artiom.baloian@nyu.edu>
  *
  * DESCRIPTION:
- * File provides utility functionalities for eccpem lib.
+ * File provides utility functions for the eccpem library.
  */
 
 #include "utils.h"
@@ -14,16 +14,19 @@
 #include <stdio.h>
 #include <string.h>
 
+
 /*
- * Function verifies input files format. They have to be PEM formatted and
- * extension is .pem
+ * Function verifies that the input file has a .pem extension and is properly
+ * formatted as a PEM file.
  *
  * Arguments:
- * - pem_file: Public key PEM formatted file path.
+ * - pem_file: Path to the file to verify. The file should be a PEM-formatted
+ *            file with a .pem extension.
  *
  * Returns:
- * - 1 if files verification was successful.
- * - 0 if files verification failed.
+ * - 1 if the file exists, has a .pem extension, and is properly PEM-formatted.
+ * - 0 if the file does not exist, lacks a .pem extension, or is not properly
+ *     PEM-formatted.
  */
 int VerifyPemFileFormat(const char* pem_file) {
 
