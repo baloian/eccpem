@@ -103,6 +103,8 @@ int ReadPrivateKeyPemFile(const char* privkey_file, uint8_t private_key[],
   return 1;
 }
 
+
+
 /*
  * Function reads public key's PEM file and stores it as compressed binary data.
  *
