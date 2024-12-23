@@ -6,6 +6,7 @@ int main() {
   RUN_UTILS_TESTS();
   RUN_CREATE_KEYS_TESTS();
   RUN_READ_PRIVATE_KEY_TESTS();
+  RUN_READ_PUBLIC_KEY_TESTS();
 
   return 0;
 }

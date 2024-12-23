@@ -135,10 +135,8 @@ int ReadPublicKeyPemFile(const char* pubkey_file, uint8_t public_key[],
     return 0;
   }
 
-  if (compressed_key_size == 0) {
-    fprintf(stderr,
-            "Invalid compressed key size. Expected 33 bytes for ECDSA "
-            "compressed public key\n");
+  if (compressed_key_size != 33) {
+    fprintf(stderr, "Invalid compressed key size. Expected 33 bytes for ECDSA compressed public key\n");
     return 0;
   }
 
@@ -153,78 +151,47 @@ int ReadPublicKeyPemFile(const char* pubkey_file, uint8_t public_key[],
   fclose(pem_file);
 
   if (pkey == NULL) {
-    fprintf(stderr, "Failed to parse public key from PEM file\n");
+    fprintf(stderr, "Failed to read public key from PEM file\n");
     return 0;
   }
 
-  /* Get key parameters */
-  OSSL_PARAM_BLD* param_bld = OSSL_PARAM_BLD_new();
-  if (param_bld == NULL) {
+  /* Convert EVP_PKEY to EC_KEY */
+  EC_KEY* ec_key = EVP_PKEY_get1_EC_KEY(pkey);
+  if (ec_key == NULL) {
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to create parameter builder\n");
+    fprintf(stderr, "Failed to convert EVP_PKEY to EC_KEY\n");
     return 0;
   }
 
-  /* Set compressed point format */
-  if (!OSSL_PARAM_BLD_push_uint32(param_bld, "point-format",
-                                  POINT_CONVERSION_COMPRESSED)) {
-    OSSL_PARAM_BLD_free(param_bld);
+  /* Get public key point */
+  const EC_POINT* pub_point = EC_KEY_get0_public_key(ec_key);
+  if (pub_point == NULL) {
+    EC_KEY_free(ec_key);
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to set compressed point format\n");
+    fprintf(stderr, "Failed to get public key point\n");
     return 0;
   }
 
-  OSSL_PARAM* params = OSSL_PARAM_BLD_to_param(param_bld);
-  OSSL_PARAM_BLD_free(param_bld);
-
-  if (params == NULL) {
+  /* Get the curve group */
+  const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+  if (group == NULL) {
+    EC_KEY_free(ec_key);
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to create parameters\n");
+    fprintf(stderr, "Failed to get curve group\n");
     return 0;
   }
 
-  /* Create context for key export */
-  EVP_PKEY_CTX* ctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
-  if (ctx == NULL) {
-    OSSL_PARAM_free(params);
+  /* Convert point to compressed form */
+  size_t len = EC_POINT_point2oct(group, pub_point, POINT_CONVERSION_COMPRESSED,
+                                 public_key, compressed_key_size, NULL);
+  if (len != compressed_key_size) {
+    EC_KEY_free(ec_key);
     EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to create key context\n");
+    fprintf(stderr, "Failed to convert public key to compressed form\n");
     return 0;
   }
 
-  /* Set parameters on context */
-  if (!EVP_PKEY_CTX_set_params(ctx, params)) {
-    EVP_PKEY_CTX_free(ctx);
-    OSSL_PARAM_free(params);
-    EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to set key parameters\n");
-    return 0;
-  }
-
-  /* Export public key to binary */
-  size_t key_size = compressed_key_size;
-  if (!EVP_PKEY_get_octet_string_param(pkey, "pub", public_key, key_size,
-                                       &key_size)) {
-    EVP_PKEY_CTX_free(ctx);
-    OSSL_PARAM_free(params);
-    EVP_PKEY_free(pkey);
-    fprintf(stderr, "Failed to export public key\n");
-    return 0;
-  }
-
-  if (key_size != compressed_key_size) {
-    EVP_PKEY_CTX_free(ctx);
-    OSSL_PARAM_free(params);
-    EVP_PKEY_free(pkey);
-    fprintf(stderr,
-            "Compressed key size mismatch. Got %zu bytes, expected %u\n",
-            key_size, compressed_key_size);
-    return 0;
-  }
-
-  EVP_PKEY_CTX_free(ctx);
-  OSSL_PARAM_free(params);
+  EC_KEY_free(ec_key);
   EVP_PKEY_free(pkey);
-
   return 1;
 }
